@@ -3,9 +3,9 @@
 # Original OpenWispr: copyright (c) 2026 human37, MIT license.
 set -euo pipefail
 
-RELEASE='0.48.0-globe.1'
-ARCHIVE='OpenWispr-0.48.0-Globe-arm64.zip'
-ARCHIVE_SHA256='f0fb4df793e25ca84f9f78a3f050f219898e8b0fbc6253e199927a699f80ee17'
+RELEASE='0.48.0-globe.2'
+ARCHIVE='OpenWispr-0.48.0-Globe.2-arm64.zip'
+ARCHIVE_SHA256='5ecbde6100e43fce2faaf19881bb8231268806cc2c6d113ca3348c89a872ab43'
 GITHUB_BASE="https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v${RELEASE}"
 HF_BASE='https://huggingface.co/spaces/ATHEYA/open-wispr-globe/resolve/main/downloads'
 INSTALL_WORK=''
