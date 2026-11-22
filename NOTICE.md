@@ -8,7 +8,7 @@ This edition is based on upstream v0.48.0, commit
 `32af9eaa46b0c27c35ee003b36988151d3c80f75`.
 
 Globe edition modifications and installer:
-Copyright (c) 2026 Atheya.Org (https://atheya.org).
+Copyright (c) 2026 Nikita Odintsov / Atheya.Org (https://atheya.org).
 
 ## MIT license and attribution
 

@@ -216,7 +216,11 @@ case "status":
 case "--help", "-h", "help":
     printUsage()
 case nil:
-    printUsage()
+    if AppBundleLaunch.isExecutableInsideAppBundle(args[0]) {
+        cmdStart()
+    } else {
+        printUsage()
+    }
 default:
     print("Unknown command: \(command!)")
     printUsage()
