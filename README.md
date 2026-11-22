@@ -28,9 +28,11 @@ Place a text cursor in the destination field, including Electron/Chromium editor
 
 [Hugging Face download page](https://huggingface.co/spaces/ATHEYA/open-wispr-globe)
 
-**Apple Silicon and Intel Mac:** [Download the universal DMG](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.48.0-globe.2/OpenWispr-Globe-0.48.0-globe.2-universal.dmg). Open the included installer on macOS 15+; it prepares Homebrew and `whisper-cpp`. [SHA-256](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.48.0-globe.2/OpenWispr-Globe-0.48.0-globe.2-universal.dmg.sha256). The Intel build has not been tested on a physical Intel Mac.
+**Apple Silicon and Intel Mac:** [Download the universal DMG](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.48.0-globe.2/OpenWispr-Globe-0.48.0-globe.2-universal-licensed.dmg). Open the included installer on macOS 15+; it prepares Homebrew and `whisper-cpp`. [SHA-256](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.48.0-globe.2/OpenWispr-Globe-0.48.0-globe.2-universal-licensed.dmg.sha256). The Intel build has not been tested on a physical Intel Mac.
 
 ### Install with one command
+
+The recommended DMG bundles the full MIT license with human37 and Nikita Odintsov / Atheya.Org attribution (`LICENSE.txt` / `LICENSE-Atheya.Org.txt`), `NOTICE.txt`, and `Создано Atheya.Org.txt` alongside the app. The 22 November 2026 packaging update leaves the app and installer unchanged.
 
 On an **Apple Silicon Mac with macOS 15 or newer**, paste this into Terminal:
 
