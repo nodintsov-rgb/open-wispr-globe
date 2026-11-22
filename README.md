@@ -2,6 +2,8 @@
 
 **Создано Atheya.Org · Created by Atheya.Org**
 
+**Лицензия: [MIT](LICENSE). При распространении доработок сохраняйте уведомление об авторстве Atheya.Org (https://atheya.org) и human37 вместе с текстом лицензии. [Подробности / Attribution](NOTICE.md).**
+
 Unofficial macOS dictation build published by Atheya.Org, based on [human37/open-wispr v0.48.0](https://github.com/human37/open-wispr/tree/v0.48.0), commit `32af9eaa46b0c27c35ee003b36988151d3c80f75`.
 
 Release: **0.48.0-globe.1**. The app reports its upstream version, 0.48.0.
@@ -82,7 +84,11 @@ The delay distinguishes a tap from a hold; it does not detect silence. Check the
 
 ## Attribution and license
 
-Original OpenWispr: **human37**, copyright © 2026 human37. Distributed under the included [MIT license](LICENSE). This is an independent community derivative, not an official release or endorsement by human37, OpenAI, Apple or Hugging Face. Whisper model weights and whisper.cpp have their own upstream distribution and licenses.
+Original OpenWispr: **human37**, copyright © 2026 human37. Globe edition modifications and installer: copyright © 2026 **Atheya.Org (https://atheya.org)**. Both are distributed under the included [MIT license](LICENSE).
+
+When redistributing modified copies containing these contributions, preserve both copyright notices (human37 and Atheya.Org) and the full MIT permission notice with copies or substantial portions. See [NOTICE.md](NOTICE.md). This is MIT attribution, not an additional interface-branding requirement.
+
+The edition is developed and distributed in accordance with upstream MIT permissions. There is no separately confirmed agreement or endorsement by the original author. This is an independent community derivative, not an official release or endorsement by human37, OpenAI, Apple or Hugging Face. Whisper model weights and whisper.cpp have their own upstream distribution and licenses.
 
 Globe edition and installer: **Создано Atheya.Org / Created by Atheya.Org**. This credit identifies the community edition and installer; original upstream copyright and MIT license are retained.
 

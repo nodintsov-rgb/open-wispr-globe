@@ -1,6 +1,9 @@
 #!/bin/bash
 # OpenWispr Globe Edition — Создано Atheya.Org
+# Copyright (c) 2026 Atheya.Org (https://atheya.org), installer; MIT license.
 # Original OpenWispr: copyright (c) 2026 human37, MIT license.
+# Preserve both copyright notices and the MIT license when redistributing copies.
+# Full license: https://github.com/nodintsov-rgb/open-wispr-globe/blob/main/LICENSE
 set -euo pipefail
 
 RELEASE='0.48.0-globe.1'
