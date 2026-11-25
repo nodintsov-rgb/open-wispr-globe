@@ -6,9 +6,9 @@
 # Full license: https://github.com/nodintsov-rgb/open-wispr-globe/blob/main/LICENSE
 set -euo pipefail
 
-RELEASE='0.48.0-globe.2'
-ARCHIVE='OpenWispr-0.48.0-Globe.2-arm64.zip'
-ARCHIVE_SHA256='5ecbde6100e43fce2faaf19881bb8231268806cc2c6d113ca3348c89a872ab43'
+RELEASE='0.49.0-globe.1'
+ARCHIVE='OpenWispr-0.49.0-Globe.1-arm64.zip'
+ARCHIVE_SHA256='3a5b14799fe6a73c8f6aed9a9a2df37d2538a1828121730e5867cf098966b002'
 GITHUB_BASE="https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v${RELEASE}"
 HF_BASE='https://huggingface.co/spaces/ATHEYA/open-wispr-globe/resolve/main/downloads'
 INSTALL_WORK=''
@@ -70,7 +70,7 @@ fi
 printf '%s  %s\n' "$ARCHIVE_SHA256" "$INSTALL_WORK/$ARCHIVE" | shasum -a 256 -c - >"$INSTALL_WORK/checksum.log" 2>&1 \
     || fail 'Контрольная сумма не совпала. Приложение не установлено.'
 ditto -x -k "$INSTALL_WORK/$ARCHIVE" "$INSTALL_WORK/unpacked"
-STAGED_APP="$INSTALL_WORK/unpacked/OpenWispr 0.48.0 Globe.app"
+STAGED_APP="$INSTALL_WORK/unpacked/OpenWispr 0.49.0 Globe.app"
 codesign --verify --deep --strict "$STAGED_APP" || fail 'Проверка целостности приложения не прошла.'
 if [[ "${1:-}" == --download-only ]]; then
     printf '\nАрхив и подпись проверены. Приложение не установлено и не запущено.\nФайлы: %s\n' "$INSTALL_WORK"

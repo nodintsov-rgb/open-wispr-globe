@@ -4,8 +4,8 @@
 
 Original software: OpenWispr by human37, copyright (c) 2026 human37.
 Upstream: https://github.com/human37/open-wispr
-This edition is based on upstream v0.48.0, commit
-`32af9eaa46b0c27c35ee003b36988151d3c80f75`.
+This edition is based on upstream v0.49.0, commit
+`b238aefeecd637fa69a16f06e3f166648e16142f`.
 
 Globe edition modifications and installer:
 Copyright (c) 2026 Nikita Odintsov / Atheya.Org (https://atheya.org).
