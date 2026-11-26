@@ -6,7 +6,7 @@ class MenuItemTarget: NSObject {
     @objc func invoke() { handler() }
 }
 
-class StatusBarController: NSObject {
+class StatusBarController: NSObject, NSMenuDelegate {
     private var statusItem: NSStatusItem
     private var animationTimer: Timer?
     private var animationFrame = 0
@@ -16,6 +16,7 @@ class StatusBarController: NSObject {
     private var copiedFeedback = false
     private var menuItemTargets: [MenuItemTarget] = []
     private var stateMenuItem: NSMenuItem?
+    private var loginItem: NSMenuItem?
 
     var reprocessHandler: ((URL) -> Void)?
     var onConfigChange: ((Config) -> Void)?
@@ -89,10 +90,15 @@ class StatusBarController: NSObject {
         let hotkeyDesc = config.hotkeySummary()
 
         let menu = NSMenu()
+        menu.delegate = self
 
         let titleItem = NSMenuItem(title: "OpenWispr v\(OpenWispr.version)", action: nil, keyEquivalent: "")
         titleItem.isEnabled = false
         menu.addItem(titleItem)
+
+        let creditItem = NSMenuItem(title: "Создано Atheya.Org", action: nil, keyEquivalent: "")
+        creditItem.isEnabled = false
+        menu.addItem(creditItem)
 
         menu.addItem(NSMenuItem.separator())
 
@@ -371,10 +377,34 @@ class StatusBarController: NSObject {
         openItem.target = self
         menu.addItem(openItem)
 
+        if LaunchAtLogin.canRegister {
+            let item = NSMenuItem(title: "Запускать при входе", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+            item.target = self
+            loginItem = item
+            updateLaunchAtLoginItem()
+            menu.addItem(item)
+        }
+
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
         statusItem.menu = menu
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        updateLaunchAtLoginItem()
+    }
+
+    private func updateLaunchAtLoginItem() {
+        guard let loginItem else { return }
+        let status = LaunchAtLogin.status
+        loginItem.title = status == .requiresApproval ? "Разрешить автозапуск в настройках…" : "Запускать при входе"
+        loginItem.state = status == .enabled ? .on : .off
+    }
+
+    @objc private func toggleLaunchAtLogin() {
+        LaunchAtLogin.toggle()
+        updateLaunchAtLoginItem()
     }
 
     @objc private func reloadConfiguration() {

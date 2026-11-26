@@ -1,4 +1,6 @@
 .build/
+.build-arm64/
+.build-intel/
 .swiftpm/
 *.app/
 .DS_Store

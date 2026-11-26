@@ -19,6 +19,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         statusBar = StatusBarController()
         recorder = AudioRecorder()
         registerSleepWakeObservers()
+        LaunchAtLogin.offerOnFirstLaunch()
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.setup()
