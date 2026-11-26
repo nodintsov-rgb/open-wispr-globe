@@ -2,21 +2,9 @@
 set -euo pipefail
 
 APP_NAME='OpenWispr Globe.app'
-RELEASE='0.49.0-globe.2'
+RELEASE='0.49.0-globe.3'
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
 SOURCE_APP="$SOURCE_DIR/$APP_NAME"
-
-finish() {
-    result=$?
-    if [[ "$result" -ne 0 ]]; then
-        printf '\nУстановка остановлена. Существующие приложения, настройки и модели не удалены.\n'
-    fi
-    if [[ -t 0 ]]; then
-        printf '\nНажмите Enter, чтобы закрыть окно.'
-        read -r _ </dev/tty || true
-    fi
-}
-trap finish EXIT
 
 fail() { printf 'Ошибка: %s\n' "$*" >&2; exit 1; }
 
@@ -24,7 +12,7 @@ fail() { printf 'Ошибка: %s\n' "$*" >&2; exit 1; }
 ARCH="$(uname -m)"
 [[ "$ARCH" == arm64 || "$ARCH" == x86_64 ]] || fail 'Поддерживаются Apple Silicon и Intel Mac.'
 if [[ "$ARCH" == x86_64 && "$(sysctl -n hw.optional.arm64 2>/dev/null || true)" == 1 ]]; then
-    fail 'На Apple Silicon откройте обычный Терминал без Rosetta и запустите установщик снова.'
+    fail 'На Apple Silicon отключите «Открывать с помощью Rosetta» в свойствах установщика и запустите его снова.'
 fi
 OS_VERSION="$(sw_vers -productVersion)"
 [[ "${OS_VERSION%%.*}" -ge 15 ]] || fail 'Для автоматической установки нужен macOS 15 или новее.'
@@ -46,14 +34,8 @@ fi
 
 printf '\n[1/3] Проверяем Homebrew и whisper.cpp\n'
 if [[ ! -x "$BREW" ]]; then
-    [[ -r /dev/tty && -w /dev/tty ]] || fail 'Для установки Homebrew нужен обычный Терминал.'
-    printf 'Установится Homebrew с официального сайта. Он может запросить пароль Mac.\n'
-    BREW_INSTALLER="$(mktemp "${TMPDIR:-/tmp}/openwispr-homebrew.XXXXXX")"
-    curl --fail --location --silent --show-error --retry 2 \
-        'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh' -o "$BREW_INSTALLER"
-    /bin/bash "$BREW_INSTALLER" </dev/tty
+    exit 20
 fi
-[[ -x "$BREW" ]] || fail 'Homebrew не установлен. Проверьте сообщения выше.'
 eval "$("$BREW" shellenv)"
 if [[ ! -x "$("$BREW" --prefix)/bin/whisper-cli" ]]; then
     HOMEBREW_NO_AUTO_UPDATE=1 "$BREW" install whisper-cpp
@@ -64,7 +46,7 @@ printf '\n[2/3] Копируем приложение\n'
 mkdir -p "$HOME/Applications"
 TARGET="$HOME/Applications/OpenWispr Globe ${RELEASE} Universal.app"
 if [[ -e "$TARGET" || -L "$TARGET" ]]; then
-    if ! diff -qr "$SOURCE_APP" "$TARGET" >/dev/null 2>&1; then
+    if [[ -L "$TARGET" ]] || ! diff -qr "$SOURCE_APP" "$TARGET" >/dev/null 2>&1; then
         TARGET="$HOME/Applications/OpenWispr Globe ${RELEASE}-$(date +%Y%m%d-%H%M%S).app"
         [[ ! -e "$TARGET" && ! -L "$TARGET" ]] || fail 'Папка установки уже существует. Повторите запуск через минуту.'
     fi
@@ -79,7 +61,7 @@ printf 'Приложение: %s\n' "$TARGET"
 if pgrep -x open-wispr >/dev/null; then
     printf 'OpenWispr уже запущен. Закройте прежнюю копию, затем откройте:\n%s\n' "$TARGET"
     printf 'При первом запуске новой копии выберите «Включить автозапуск».\n'
-    exit 0
+    exit 21
 fi
 printf 'При первом открытии выберите «Включить автозапуск».\n'
 printf 'Разрешите микрофон и «Универсальный доступ» в настройках macOS.\n'
@@ -87,4 +69,5 @@ printf 'Если macOS блокирует независимую сборку, �
 printf 'При первом запуске программа загрузит модель. Дождитесь статуса Ready.\n'
 if ! open -n "$TARGET"; then
     printf 'Приложение установлено. Завершите разрешение запуска и откройте его из папки Applications вашего пользователя.\n'
+    exit 21
 fi

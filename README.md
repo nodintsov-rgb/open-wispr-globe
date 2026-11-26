@@ -10,7 +10,7 @@ Local dictation for macOS, developed by Nikita Odintsov / ATHEYA.org.
 
 Based on [human37/open-wispr v0.49.0](https://github.com/human37/open-wispr/tree/v0.49.0), with the original MIT license retained.
 
-Release: **0.49.0-globe.2**. The app reports version 0.49.0. This release includes upstream fixes for automatic pasting in Firefox and for applying custom vocabulary and prompt hints.
+Release: **0.49.0-globe.3**. The app reports version 0.49.0. This release includes upstream fixes for automatic pasting in Firefox and for applying custom vocabulary and prompt hints.
 
 ## Globe behaviour
 
@@ -26,13 +26,34 @@ Place a text cursor in the destination field, including Electron/Chromium editor
 
 ## Install
 
-[Download the installer DMG](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.2/OpenWispr-Globe-0.49.0-globe.2-installer.dmg) · [SHA-256](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.2/OpenWispr-Globe-0.49.0-globe.2-installer.dmg.sha256) · [Hugging Face mirror](https://huggingface.co/spaces/ATHEYA/open-wispr-globe)
+[Download the installer DMG](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.3/OpenWispr-Globe-0.49.0-globe.3-installer.dmg) · [SHA-256](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.3/OpenWispr-Globe-0.49.0-globe.3-installer.dmg.sha256) · [Hugging Face mirror](https://huggingface.co/spaces/ATHEYA/open-wispr-globe)
 
 1. Open the DMG on an Apple Silicon or Intel Mac running macOS 15 or newer.
-2. Double-click **Установить OpenWispr Globe**. The installer opens Terminal and prepares Homebrew and whisper.cpp if needed.
+2. Double-click **Установить OpenWispr Globe**. The installer prepares whisper.cpp if needed. If Homebrew is missing, it offers to open the official Homebrew installation instructions.
 3. Open the installed copy from your Applications folder if another copy was running. Choose whether to start at login, then grant Microphone and Accessibility when macOS asks.
 
 The login option is also available under **Запускать при входе** in the menu bar. The installer and app have local ad-hoc signatures. macOS may ask for launch approval. The installer contains the MIT license and Atheya.Org attribution. The first model download requires internet access.
+
+### Установка через Терминал
+
+Скопируйте весь блок в Терминал и нажмите Enter. Команда скачает DMG, сверит SHA‑256 и откроет установщик.
+
+```sh
+(
+  set -e
+  work="$(mktemp -d "${TMPDIR:-/tmp}/openwispr-globe.XXXXXX")"
+  cd "$work"
+  dmg='OpenWispr-Globe-0.49.0-globe.3-installer.dmg'
+  curl -fL --retry 2 -o "$dmg" 'https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.3/OpenWispr-Globe-0.49.0-globe.3-installer.dmg'
+  printf '%s  %s\n' '4412f1d0aec61e20983dc279359b60ccabdf234ef527c5c7237ca13ca0c22984' "$dmg" | shasum -a 256 -c -
+  xattr -w com.apple.quarantine "0081;$(printf '%x' "$(date +%s)");OpenWispr Globe;" "$dmg"
+  mkdir volume
+  hdiutil attach -readonly -mountpoint "$work/volume" "$dmg"
+  open "$work/volume/Установить OpenWispr Globe.app"
+)
+```
+
+Если Homebrew отсутствует, установщик предложит открыть официальную инструкцию. После установки Homebrew снова откройте установщик OpenWispr Globe. Если macOS попросит подтвердить запуск, используйте «Системные настройки → Конфиденциальность и безопасность → Всё равно открыть» только после проверки источника. [Инструкция Apple](https://support.apple.com/ru-ru/102445).
 
 ## Build from source
 
