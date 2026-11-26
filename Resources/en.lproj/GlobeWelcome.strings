@@ -1,0 +1,3 @@
+"welcome.title" = "Welcome to OpenWispr Globe";
+"welcome.body" = "Globe is an easy way to use local speech recognition powered by Whisper. Select a model under Model in the menu bar and wait for it to download. Then hold the Globe key and speak. Release the key to insert your text.\n\nEnjoy!\nNikita Odintsov";
+"welcome.continue" = "Get started";

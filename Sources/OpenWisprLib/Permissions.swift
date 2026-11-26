@@ -4,20 +4,20 @@ import ApplicationServices
 import Foundation
 
 struct Permissions {
-    static func ensureMicrophone() {
+    static var microphoneGranted: Bool {
+        AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
+    }
+
+    static func requestMicrophone(completion: @escaping (Bool) -> Void) {
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
         case .authorized:
-            print("Microphone: granted")
+            completion(true)
         case .notDetermined:
-            print("Microphone: requesting...")
-            let semaphore = DispatchSemaphore(value: 0)
             AVCaptureDevice.requestAccess(for: .audio) { granted in
-                print("Microphone: \(granted ? "granted" : "denied")")
-                semaphore.signal()
+                DispatchQueue.main.async { completion(granted) }
             }
-            semaphore.wait()
         default:
-            print("Microphone: denied — grant in System Settings → Privacy & Security → Microphone")
+            completion(false)
         }
     }
 
@@ -76,6 +76,12 @@ struct Permissions {
 
     static func openAccessibilitySettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    static func openMicrophoneSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {
             NSWorkspace.shared.open(url)
         }
     }

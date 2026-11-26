@@ -11,7 +11,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
     private let recordingSoundFeedback = RecordingSoundFeedback()
     var currentRecordingURL: URL?
     private var sleepWakeObservers: [NSObjectProtocol] = []
-    private var accessibilityPollTimer: Timer?
+    private var permissionPollTimer: Timer?
     var isReady = false
     public var lastTranscription: String?
 
@@ -19,32 +19,35 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         statusBar = StatusBarController()
         recorder = AudioRecorder()
         registerSleepWakeObservers()
-        LaunchAtLogin.offerOnFirstLaunch()
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.setup()
-        }
-    }
-
-    public func applicationWillTerminate(_ notification: Notification) {
-        accessibilityPollTimer?.invalidate()
-        recorder?.teardown()
-        unregisterSleepWakeObservers()
-    }
-
-    private func setup() {
-        do {
-            try setupInner()
-        } catch {
-            print("Fatal setup error: \(error.localizedDescription)")
-            DispatchQueue.main.async { [weak self] in
-                self?.statusBar.state = .error(error.localizedDescription)
-                self?.statusBar.updateDownloadProgress(nil)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            GlobeWelcome.showOnFirstLaunch()
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                self?.setup()
             }
         }
     }
 
-    private func setupInner() throws {
+    public func applicationWillTerminate(_ notification: Notification) {
+        permissionPollTimer?.invalidate()
+        recorder?.teardown()
+        unregisterSleepWakeObservers()
+    }
+
+    public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        switch statusBar?.state {
+        case .waitingForMicrophone:
+            Permissions.openMicrophoneSettings()
+        case .waitingForPermission:
+            Permissions.openAccessibilitySettings()
+        default:
+            break
+        }
+        return false
+    }
+
+    private func setup() {
         config = Config.load()
         inserter = TextInserter()
         migrateAudioDeviceUIDIfNeeded()
@@ -70,6 +73,10 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
         if Transcriber.findWhisperBinary() == nil {
             print("Error: whisper-cpp not found. Install it with: brew install whisper-cpp")
+            DispatchQueue.main.async { [weak self] in
+                self?.statusBar.state = .error("whisper-cpp не найден. Откройте установщик OpenWispr Globe.")
+                self?.statusBar.buildMenu()
+            }
             return
         }
 
@@ -84,30 +91,56 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
-        Permissions.ensureMicrophone()
+        DispatchQueue.main.async { [weak self] in
+            self?.beginMicrophoneStep()
+        }
+    }
 
-        if !AXIsProcessTrusted() {
-            print("Accessibility: not granted")
-            print("Waiting for Accessibility permission...")
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.statusBar.state = .waitingForPermission
-                self.statusBar.buildMenu()
-                Permissions.promptAccessibility()
-                Permissions.openAccessibilitySettings()
-                self.startAccessibilityPolling()
-            }
+    private func beginMicrophoneStep() {
+        if Permissions.microphoneGranted {
+            beginAccessibilityStep()
             return
         }
 
-        print("Accessibility: granted")
-        Permissions.recordCurrentVersion()
-        try finishSetup()
+        statusBar.state = .waitingForMicrophone
+        statusBar.buildMenu()
+        permissionPollTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            if Permissions.microphoneGranted {
+                self?.beginAccessibilityStep()
+            }
+        }
+
+        Permissions.requestMicrophone { [weak self] granted in
+            guard let self, case .waitingForMicrophone = self.statusBar.state else { return }
+            if granted || Permissions.microphoneGranted {
+                self.beginAccessibilityStep()
+            } else {
+                let alert = NSAlert()
+                alert.messageText = "Разрешите OpenWispr доступ к микрофону"
+                alert.informativeText = "Включите OpenWispr в разделе «Конфиденциальность и безопасность → Микрофон». Если macOS предложит завершить работу и открыть приложение снова, подтвердите."
+                alert.addButton(withTitle: "Открыть настройки микрофона")
+                alert.addButton(withTitle: "Закрыть")
+                NSApp.activate(ignoringOtherApps: true)
+                if alert.runModal() == .alertFirstButtonReturn {
+                    Permissions.openMicrophoneSettings()
+                }
+            }
+        }
     }
 
-    private func startAccessibilityPolling() {
-        guard accessibilityPollTimer == nil else { return }
-        accessibilityPollTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+    private func beginAccessibilityStep() {
+        permissionPollTimer?.invalidate()
+        permissionPollTimer = nil
+        if AXIsProcessTrusted() {
+            resumeWhenAccessibilityGranted()
+            return
+        }
+
+        statusBar.state = .waitingForPermission
+        statusBar.buildMenu()
+        Permissions.promptAccessibility()
+        Permissions.openAccessibilitySettings()
+        permissionPollTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.resumeWhenAccessibilityGranted()
         }
         resumeWhenAccessibilityGranted()
@@ -115,8 +148,10 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func resumeWhenAccessibilityGranted() {
         guard AXIsProcessTrusted() else { return }
-        accessibilityPollTimer?.invalidate()
-        accessibilityPollTimer = nil
+        permissionPollTimer?.invalidate()
+        permissionPollTimer = nil
+        statusBar.state = .starting
+        statusBar.buildMenu()
         print("Accessibility: granted")
         Permissions.recordCurrentVersion()
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -125,6 +160,10 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
                 try self.finishSetup()
             } catch {
                 print("Fatal setup error: \(error.localizedDescription)")
+                DispatchQueue.main.async { [weak self] in
+                    self?.statusBar.state = .error(error.localizedDescription)
+                    self?.statusBar.updateDownloadProgress(nil)
+                }
             }
         }
     }
@@ -209,6 +248,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         print("Ready.")
         print("Local Globe hold fix: 350 ms delay; duplicate Fn flags ignored.")
         recorder.prepare()
+        LaunchAtLogin.offerOnFirstLaunch()
     }
 
     public func reloadConfig() {

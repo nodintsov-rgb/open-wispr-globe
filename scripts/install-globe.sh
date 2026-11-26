@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-APP_NAME='OpenWispr Globe.app'
-RELEASE='0.49.0-globe.3'
+APP_NAME='OpenWispr Globe Universal.app'
+RELEASE='0.49.0-globe.10'
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
 SOURCE_APP="$SOURCE_DIR/$APP_NAME"
 
@@ -44,30 +44,19 @@ fi
 
 printf '\n[2/3] Копируем приложение\n'
 mkdir -p "$HOME/Applications"
-TARGET="$HOME/Applications/OpenWispr Globe ${RELEASE} Universal.app"
-if [[ -e "$TARGET" || -L "$TARGET" ]]; then
-    if [[ -L "$TARGET" ]] || ! diff -qr "$SOURCE_APP" "$TARGET" >/dev/null 2>&1; then
-        TARGET="$HOME/Applications/OpenWispr Globe ${RELEASE}-$(date +%Y%m%d-%H%M%S).app"
-        [[ ! -e "$TARGET" && ! -L "$TARGET" ]] || fail 'Папка установки уже существует. Повторите запуск через минуту.'
-    fi
+TARGET="$HOME/Applications/$APP_NAME"
+if [[ -e "/Applications/$APP_NAME" || -L "/Applications/$APP_NAME" ]]; then
+    TARGET="/Applications/$APP_NAME"
 fi
-if [[ ! -e "$TARGET" ]]; then
+if [[ -L "$TARGET" ]]; then
+    fail "На месте приложения находится ссылка. Уберите её через Finder и повторите установку."
+elif [[ -e "$TARGET" ]] && ! diff -qr "$SOURCE_APP" "$TARGET" >/dev/null 2>&1; then
+    printf '\0%s\0' "$TARGET"
+    exit 22
+elif [[ ! -e "$TARGET" ]]; then
     ditto "$SOURCE_APP" "$TARGET"
 fi
 codesign --verify --deep --strict "$TARGET" || fail 'Проверка установленного приложения не прошла.'
 
-printf '\n[3/3] Открываем приложение\n'
-printf 'Приложение: %s\n' "$TARGET"
-if pgrep -x open-wispr >/dev/null; then
-    printf 'OpenWispr уже запущен. Закройте прежнюю копию, затем откройте:\n%s\n' "$TARGET"
-    printf 'При первом запуске новой копии выберите «Включить автозапуск».\n'
-    exit 21
-fi
-printf 'При первом открытии выберите «Включить автозапуск».\n'
-printf 'Разрешите микрофон и «Универсальный доступ» в настройках macOS.\n'
-printf 'Если macOS блокирует независимую сборку, проверьте источник и разрешите её в «Конфиденциальность и безопасность».\n'
-printf 'При первом запуске программа загрузит модель. Дождитесь статуса Ready.\n'
-if ! open -n "$TARGET"; then
-    printf 'Приложение установлено. Завершите разрешение запуска и откройте его из папки Applications вашего пользователя.\n'
-    exit 21
-fi
+# Mark the installed path separately from the diagnostic output.
+printf '\0%s\0' "$TARGET"

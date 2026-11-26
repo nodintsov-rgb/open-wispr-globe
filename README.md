@@ -10,7 +10,7 @@ Local dictation for macOS, developed by Nikita Odintsov / ATHEYA.org.
 
 Based on [human37/open-wispr v0.49.0](https://github.com/human37/open-wispr/tree/v0.49.0), with the original MIT license retained.
 
-Release: **0.49.0-globe.3**. The app reports version 0.49.0. This release includes upstream fixes for automatic pasting in Firefox and for applying custom vocabulary and prompt hints.
+Release: **0.49.0-globe.10**. The app reports version 0.49.0. This release includes upstream fixes for automatic pasting in Firefox and for applying custom vocabulary and prompt hints.
 
 ## Globe behaviour
 
@@ -26,11 +26,11 @@ Place a text cursor in the destination field, including Electron/Chromium editor
 
 ## Install
 
-[Download the installer DMG](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.3/OpenWispr-Globe-0.49.0-globe.3-installer.dmg) · [SHA-256](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.3/OpenWispr-Globe-0.49.0-globe.3-installer.dmg.sha256) · [Hugging Face mirror](https://huggingface.co/spaces/ATHEYA/open-wispr-globe)
+[Download the installer DMG](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.10/OpenWispr-Globe-Universal.dmg) · [SHA-256](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.10/OpenWispr-Globe-Universal.dmg.sha256) · [Hugging Face mirror](https://huggingface.co/spaces/ATHEYA/open-wispr-globe)
 
 1. Open the DMG on an Apple Silicon or Intel Mac running macOS 15 or newer.
 2. Double-click **Установить OpenWispr Globe**. The installer prepares whisper.cpp if needed. If Homebrew is missing, it offers to open the official Homebrew installation instructions.
-3. Open the installed copy from your Applications folder if another copy was running. Choose whether to start at login, then grant Microphone and Accessibility when macOS asks.
+3. Open the installed copy from your Applications folder if another copy was running. Grant Microphone and Accessibility when macOS asks. After Ready, choose whether to start at login.
 
 The login option is also available under **Запускать при входе** in the menu bar. The installer and app have local ad-hoc signatures. macOS may ask for launch approval. The installer contains the MIT license and Atheya.Org attribution. The first model download requires internet access.
 
@@ -43,9 +43,9 @@ The login option is also available under **Запускать при входе*
   set -e
   work="$(mktemp -d "${TMPDIR:-/tmp}/openwispr-globe.XXXXXX")"
   cd "$work"
-  dmg='OpenWispr-Globe-0.49.0-globe.3-installer.dmg'
-  curl -fL --retry 2 -o "$dmg" 'https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.3/OpenWispr-Globe-0.49.0-globe.3-installer.dmg'
-  printf '%s  %s\n' '4412f1d0aec61e20983dc279359b60ccabdf234ef527c5c7237ca13ca0c22984' "$dmg" | shasum -a 256 -c -
+  dmg='OpenWispr Globe Universal.dmg'
+  curl -fL --retry 2 -o "$dmg" 'https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.10/OpenWispr-Globe-Universal.dmg'
+  printf '%s  %s\n' '7c3ca3031fa10f2e778dd94e1aacb1b93f5c409fd8f843c1dc2ddd5d928ec987' "$dmg" | shasum -a 256 -c -
   xattr -w com.apple.quarantine "0081;$(printf '%x' "$(date +%s)");OpenWispr Globe;" "$dmg"
   mkdir volume
   hdiutil attach -readonly -mountpoint "$work/volume" "$dmg"
@@ -55,13 +55,15 @@ The login option is also available under **Запускать при входе*
 
 Если Homebrew отсутствует, установщик предложит открыть официальную инструкцию. После установки Homebrew снова откройте установщик OpenWispr Globe. Если macOS попросит подтвердить запуск, используйте «Системные настройки → Конфиденциальность и безопасность → Всё равно открыть» только после проверки источника. [Инструкция Apple](https://support.apple.com/ru-ru/102445).
 
+The installed app is named **OpenWispr Globe Universal**. During reinstall, the installer offers to replace the existing copy and move detected older Globe builds to Trash. If macOS lists a retired copy under Privacy & Security → System & App Protection Override, select that entry and use the minus button.
+
 ## Build from source
 
 Requires Apple command line developer tools with Swift 5.9 or newer:
 
 ```sh
 swift build -c release --disable-sandbox
-bash scripts/bundle-app.sh .build/release/open-wispr 'OpenWispr Globe.app' 0.49.0
+bash scripts/bundle-app.sh .build/release/open-wispr 'OpenWispr Globe Universal.app' 0.49.0
 ```
 
 Run the standalone hotkey checks:

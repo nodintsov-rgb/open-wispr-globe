@@ -22,16 +22,18 @@ class StatusBarController: NSObject, NSMenuDelegate {
     var onConfigChange: ((Config) -> Void)?
 
     enum State {
+        case starting
         case idle
         case recording
         case transcribing
         case downloading
+        case waitingForMicrophone
         case waitingForPermission
         case copiedToClipboard
         case error(String)
     }
 
-    var state: State = .idle {
+    var state: State = .starting {
         didSet { updateIcon() }
     }
 
@@ -107,16 +109,27 @@ class StatusBarController: NSObject, NSMenuDelegate {
             stateLabel = progress
         } else {
             switch state {
+            case .starting: stateLabel = "Запуск OpenWispr…"
             case .idle: stateLabel = "Ready"
             case .recording: stateLabel = "Recording..."
             case .transcribing: stateLabel = "Transcribing..."
             case .downloading: stateLabel = "Downloading model..."
+            case .waitingForMicrophone: stateLabel = "Открыть настройки микрофона…"
             case .waitingForPermission: stateLabel = "Waiting for Accessibility permission..."
             case .copiedToClipboard: stateLabel = "Copied to clipboard"
             case .error(let message): stateLabel = "Error: \(message)"
             }
         }
-        if case .waitingForPermission = state {
+        if case .waitingForMicrophone = state {
+            let target = MenuItemTarget {
+                Permissions.openMicrophoneSettings()
+            }
+            menuItemTargets.append(target)
+            let stateItem = NSMenuItem(title: stateLabel, action: #selector(MenuItemTarget.invoke), keyEquivalent: "")
+            stateItem.target = target
+            menu.addItem(stateItem)
+            stateMenuItem = stateItem
+        } else if case .waitingForPermission = state {
             let target = MenuItemTarget {
                 Permissions.openAccessibilitySettings()
             }
@@ -377,13 +390,11 @@ class StatusBarController: NSObject, NSMenuDelegate {
         openItem.target = self
         menu.addItem(openItem)
 
-        if LaunchAtLogin.canRegister {
-            let item = NSMenuItem(title: "Запускать при входе", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
-            item.target = self
-            loginItem = item
-            updateLaunchAtLoginItem()
-            menu.addItem(item)
-        }
+        let item = NSMenuItem(title: "Запускать при входе", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        item.target = self
+        loginItem = item
+        updateLaunchAtLoginItem()
+        menu.addItem(item)
 
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
@@ -397,6 +408,11 @@ class StatusBarController: NSObject, NSMenuDelegate {
 
     private func updateLaunchAtLoginItem() {
         guard let loginItem else { return }
+        guard LaunchAtLogin.canRegister else {
+            loginItem.title = "Как включить автозапуск…"
+            loginItem.state = .off
+            return
+        }
         let status = LaunchAtLogin.status
         loginItem.title = status == .requiresApproval ? "Разрешить автозапуск в настройках…" : "Запускать при входе"
         loginItem.state = status == .enabled ? .on : .off
@@ -426,7 +442,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
         stopAnimation()
 
         switch state {
-        case .idle:
+        case .starting, .idle:
             setIcon(StatusBarController.drawLogo(active: false))
         case .recording:
             startRecordingAnimation()
@@ -434,7 +450,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
             startTranscribingAnimation()
         case .downloading:
             startDownloadingAnimation()
-        case .waitingForPermission:
+        case .waitingForMicrophone, .waitingForPermission:
             setIcon(StatusBarController.drawLockIcon())
         case .copiedToClipboard:
             setIcon(StatusBarController.drawCheckmarkIcon())

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 BINARY="${1:-.build/release/open-wispr}"
-APP_DIR="${2:-OpenWispr.app}"
+APP_DIR="${2:-OpenWispr Globe Universal.app}"
 VERSION="${3:-0.3.0}"
 
 rm -rf "$APP_DIR"
@@ -14,20 +14,23 @@ cp "$BINARY" "$APP_DIR/Contents/MacOS/open-wispr"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cp "$REPO_DIR/Resources/AppIcon.icns" "$APP_DIR/Contents/Resources/AppIcon.icns"
+cp -R "$REPO_DIR"/Resources/*.lproj "$APP_DIR/Contents/Resources/"
 
 cat > "$APP_DIR/Contents/Info.plist" << PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
     <key>CFBundleExecutable</key>
     <string>open-wispr</string>
     <key>CFBundleIdentifier</key>
     <string>com.human37.open-wispr</string>
     <key>CFBundleName</key>
-    <string>OpenWispr</string>
+    <string>OpenWispr Globe</string>
     <key>CFBundleDisplayName</key>
-    <string>OpenWispr</string>
+    <string>OpenWispr Globe Universal</string>
     <key>CFBundleVersion</key>
     <string>${VERSION}</string>
     <key>CFBundleShortVersionString</key>
@@ -41,7 +44,7 @@ cat > "$APP_DIR/Contents/Info.plist" << PLIST
     <key>LSUIElement</key>
     <true/>
     <key>NSMicrophoneUsageDescription</key>
-    <string>OpenWispr needs microphone access to record speech for transcription.</string>
+    <string>OpenWispr Globe Universal uses the microphone to record speech for local dictation.</string>
 </dict>
 </plist>
 PLIST

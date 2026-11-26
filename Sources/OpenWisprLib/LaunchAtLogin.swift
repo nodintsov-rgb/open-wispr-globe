@@ -18,7 +18,7 @@ enum LaunchAtLogin {
     static var status: SMAppService.Status { service.status }
 
     static func offerOnFirstLaunch() {
-        guard canRegister, status == .notRegistered,
+        guard canRegister, status != .enabled,
               !UserDefaults.standard.bool(forKey: promptKey) else { return }
         let alert = NSAlert()
         alert.messageText = "Запускать OpenWispr при входе?"
@@ -28,15 +28,35 @@ enum LaunchAtLogin {
         NSApp.activate(ignoringOtherApps: true)
         let startAtLogin = alert.runModal() == .alertFirstButtonReturn
         UserDefaults.standard.set(true, forKey: promptKey)
-        if startAtLogin { toggle() }
+        if startAtLogin { enable() }
     }
 
     static func toggle() {
-        guard canRegister else { return }
+        guard canRegister else {
+            let alert = NSAlert()
+            alert.messageText = "Откройте установленный OpenWispr"
+            alert.informativeText = "Для автозапуска откройте OpenWispr из папки «Программы» в Finder."
+            alert.addButton(withTitle: "OK")
+            NSApp.activate(ignoringOtherApps: true)
+            alert.runModal()
+            return
+        }
+        guard status == .enabled else {
+            enable()
+            return
+        }
+        do {
+            try service.unregister()
+        } catch {
+            showRegistrationError(error)
+        }
+    }
+
+    private static func enable() {
         do {
             switch status {
             case .enabled:
-                try service.unregister()
+                return
             case .requiresApproval:
                 SMAppService.openSystemSettingsLoginItems()
             default:
@@ -46,14 +66,20 @@ enum LaunchAtLogin {
                 }
             }
         } catch {
-            let alert = NSAlert(error: error)
-            alert.messageText = "Не удалось изменить автозапуск OpenWispr"
-            alert.addButton(withTitle: "Открыть настройки")
-            alert.addButton(withTitle: "Закрыть")
-            NSApp.activate(ignoringOtherApps: true)
-            if alert.runModal() == .alertFirstButtonReturn {
-                SMAppService.openSystemSettingsLoginItems()
-            }
+            showRegistrationError(error)
+        }
+    }
+
+    private static func showRegistrationError(_ error: Error) {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Не удалось изменить автозапуск OpenWispr"
+        alert.informativeText = error.localizedDescription
+        alert.addButton(withTitle: "Открыть настройки")
+        alert.addButton(withTitle: "Закрыть")
+        NSApp.activate(ignoringOtherApps: true)
+        if alert.runModal() == .alertFirstButtonReturn {
+            SMAppService.openSystemSettingsLoginItems()
         }
     }
 }
