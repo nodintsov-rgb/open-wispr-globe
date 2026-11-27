@@ -20,6 +20,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
 
     var reprocessHandler: ((URL) -> Void)?
     var onConfigChange: ((Config) -> Void)?
+    var onModelSelection: ((String) -> Void)?
 
     enum State {
         case starting
@@ -27,6 +28,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
         case recording
         case transcribing
         case downloading
+        case waitingForModel(String?)
         case waitingForMicrophone
         case waitingForPermission
         case copiedToClipboard
@@ -114,6 +116,8 @@ class StatusBarController: NSObject, NSMenuDelegate {
             case .recording: stateLabel = "Recording..."
             case .transcribing: stateLabel = "Transcribing..."
             case .downloading: stateLabel = "Downloading model..."
+            case .waitingForModel(let error):
+                stateLabel = error ?? NSLocalizedString("Choose a model from the Model menu", tableName: "GlobeModels", comment: "No selected model")
             case .waitingForMicrophone: stateLabel = "Открыть настройки микрофона…"
             case .waitingForPermission: stateLabel = "Waiting for Accessibility permission..."
             case .copiedToClipboard: stateLabel = "Copied to clipboard"
@@ -200,16 +204,10 @@ class StatusBarController: NSObject, NSMenuDelegate {
 
         for model in englishModels {
             let target = MenuItemTarget { [weak self] in
-                var cfg = Config.load()
-                cfg.modelSize = model
-                if cfg.language != "en" {
-                    cfg.language = "en"
-                }
-                try? cfg.save()
-                self?.onConfigChange?(cfg)
+                self?.onModelSelection?(model)
             }
             self.menuItemTargets.append(target)
-            let item = NSMenuItem(title: "  \(model)", action: #selector(MenuItemTarget.invoke), keyEquivalent: "")
+            let item = NSMenuItem(title: "  \(ModelSelection.label(for: model))", action: #selector(MenuItemTarget.invoke), keyEquivalent: "")
             item.target = target
             if model == config.modelSize {
                 item.state = .on
@@ -225,13 +223,10 @@ class StatusBarController: NSObject, NSMenuDelegate {
 
         for model in multilingualModels {
             let target = MenuItemTarget { [weak self] in
-                var cfg = Config.load()
-                cfg.modelSize = model
-                try? cfg.save()
-                self?.onConfigChange?(cfg)
+                self?.onModelSelection?(model)
             }
             self.menuItemTargets.append(target)
-            let item = NSMenuItem(title: "  \(model)", action: #selector(MenuItemTarget.invoke), keyEquivalent: "")
+            let item = NSMenuItem(title: "  \(ModelSelection.label(for: model))", action: #selector(MenuItemTarget.invoke), keyEquivalent: "")
             item.target = target
             if model == config.modelSize {
                 item.state = .on
@@ -450,7 +445,7 @@ class StatusBarController: NSObject, NSMenuDelegate {
             startTranscribingAnimation()
         case .downloading:
             startDownloadingAnimation()
-        case .waitingForMicrophone, .waitingForPermission:
+        case .waitingForModel, .waitingForMicrophone, .waitingForPermission:
             setIcon(StatusBarController.drawLockIcon())
         case .copiedToClipboard:
             setIcon(StatusBarController.drawCheckmarkIcon())

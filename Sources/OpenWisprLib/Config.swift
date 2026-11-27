@@ -258,9 +258,9 @@ public struct Config: Codable {
 
     public static let supportedModels: [String] = [
         "tiny.en", "tiny.en-q5_1",
-        "tiny",
+        "tiny", "tiny-q5_1",
         "base.en", "base.en-q5_1",
-        "base",
+        "base", "base-q5_1",
         "small.en", "small.en-q5_1",
         "small",
         "medium.en", "medium.en-q5_0",

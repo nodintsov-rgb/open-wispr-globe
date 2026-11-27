@@ -154,6 +154,13 @@ public class Transcriber {
     }
 
     public static func findWhisperBinary() -> String? {
+        if Bundle.main.bundleURL.pathExtension == "app" {
+            let bundled = Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/whisper-cli")
+            if FileManager.default.isExecutableFile(atPath: bundled.path) {
+                return bundled.path
+            }
+        }
+
         let candidates = [
             "/opt/homebrew/bin/whisper-cli",
             "/usr/local/bin/whisper-cli",
@@ -231,7 +238,7 @@ enum TranscriberError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .whisperNotFound:
-            return "whisper-cpp not found. Install it with: brew install whisper-cpp"
+            return "Движок распознавания не найден. Переустановите OpenWispr Globe Universal."
         case .modelNotFound(let size):
             return "Whisper model '\(size)' not found. Download it with: open-wispr download-model \(size)"
         case .vadModelNotFound:

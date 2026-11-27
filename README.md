@@ -10,7 +10,7 @@ Local dictation for macOS, developed by Nikita Odintsov / ATHEYA.org.
 
 Based on [human37/open-wispr v0.49.0](https://github.com/human37/open-wispr/tree/v0.49.0), with the original MIT license retained.
 
-Release: **0.49.0-globe.10**. The app reports version 0.49.0. This release includes upstream fixes for automatic pasting in Firefox and for applying custom vocabulary and prompt hints.
+Release: **0.49.0-globe.12**. The app reports version 0.49.0. This release includes upstream fixes for automatic pasting in Firefox and for applying custom vocabulary and prompt hints.
 
 ## Globe behaviour
 
@@ -26,13 +26,13 @@ Place a text cursor in the destination field, including Electron/Chromium editor
 
 ## Install
 
-[Download the installer DMG](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.10/OpenWispr-Globe-Universal.dmg) · [SHA-256](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.10/OpenWispr-Globe-Universal.dmg.sha256) · [Hugging Face mirror](https://huggingface.co/spaces/ATHEYA/open-wispr-globe)
+[Download the installer DMG](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.12/OpenWispr-Globe-Universal.dmg) · [SHA-256](https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.12/OpenWispr-Globe-Universal.dmg.sha256) · [Hugging Face mirror](https://huggingface.co/spaces/ATHEYA/open-wispr-globe)
 
 1. Open the DMG on an Apple Silicon or Intel Mac running macOS 15 or newer.
-2. Double-click **Установить OpenWispr Globe**. The installer prepares whisper.cpp if needed. If Homebrew is missing, it offers to open the official Homebrew installation instructions.
-3. Open the installed copy from your Applications folder if another copy was running. Grant Microphone and Accessibility when macOS asks. After Ready, choose whether to start at login.
+2. Double-click **Установить OpenWispr Globe**. The installer includes the whisper.cpp engine. Homebrew, Xcode and Terminal are optional for end users.
+3. Open the installed copy from your Applications folder if another copy was running. Grant Microphone and Accessibility when macOS asks. Choose a model after reviewing the download size. After Ready, choose whether to start at login.
 
-The login option is also available under **Запускать при входе** in the menu bar. The installer and app have local ad-hoc signatures. macOS may ask for launch approval. The installer contains the MIT license and Atheya.Org attribution. The first model download requires internet access.
+The login option is also available under **Запускать при входе** in the menu bar. The installer and app have local ad-hoc signatures. macOS may ask for launch approval. The installer contains the MIT license and Atheya.Org attribution. The first model download requires internet access. Models in the menu show download sizes or an installed label. The multilingual tiny-q5_1 (32 MB) and base-q5_1 (60 MB) are options for metered connections.
 
 ### Установка через Терминал
 
@@ -44,8 +44,8 @@ The login option is also available under **Запускать при входе*
   work="$(mktemp -d "${TMPDIR:-/tmp}/openwispr-globe.XXXXXX")"
   cd "$work"
   dmg='OpenWispr Globe Universal.dmg'
-  curl -fL --retry 2 -o "$dmg" 'https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.10/OpenWispr-Globe-Universal.dmg'
-  printf '%s  %s\n' '7c3ca3031fa10f2e778dd94e1aacb1b93f5c409fd8f843c1dc2ddd5d928ec987' "$dmg" | shasum -a 256 -c -
+  curl -fL --retry 2 -o "$dmg" 'https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v0.49.0-globe.12/OpenWispr-Globe-Universal.dmg'
+  printf '%s  %s\n' 'c8a40f57b125bacb68e981732b882c52383b2a27e845b0c63c3fa7461b1e0698' "$dmg" | shasum -a 256 -c -
   xattr -w com.apple.quarantine "0081;$(printf '%x' "$(date +%s)");OpenWispr Globe;" "$dmg"
   mkdir volume
   hdiutil attach -readonly -mountpoint "$work/volume" "$dmg"
@@ -53,7 +53,7 @@ The login option is also available under **Запускать при входе*
 )
 ```
 
-Если Homebrew отсутствует, установщик предложит открыть официальную инструкцию. После установки Homebrew снова откройте установщик OpenWispr Globe. Если macOS попросит подтвердить запуск, используйте «Системные настройки → Конфиденциальность и безопасность → Всё равно открыть» только после проверки источника. [Инструкция Apple](https://support.apple.com/ru-ru/102445).
+Если macOS попросит подтвердить запуск, используйте «Системные настройки → Конфиденциальность и безопасность → Всё равно открыть» только после проверки источника. [Инструкция Apple](https://support.apple.com/ru-ru/102445).
 
 The installed app is named **OpenWispr Globe Universal**. During reinstall, the installer offers to replace the existing copy and move detected older Globe builds to Trash. If macOS lists a retired copy under Privacy & Security → System & App Protection Override, select that entry and use the minus button.
 
@@ -64,6 +64,13 @@ Requires Apple command line developer tools with Swift 5.9 or newer:
 ```sh
 swift build -c release --disable-sandbox
 bash scripts/bundle-app.sh .build/release/open-wispr 'OpenWispr Globe Universal.app' 0.49.0
+```
+
+To build an app with whisper.cpp included, download the [whisper.cpp v1.9.4 source archive](https://codeload.github.com/ggml-org/whisper.cpp/tar.gz/refs/tags/v1.9.4) and run these commands on the build Mac with CMake installed:
+
+```sh
+bash scripts/build-whisper-runtime.sh whisper.cpp-v1.9.4.tar.gz .build/whisper-runtime
+bash scripts/bundle-app.sh .build/release/open-wispr 'OpenWispr Globe Universal.app' 0.49.0 .build/whisper-runtime
 ```
 
 Run the standalone hotkey checks:
@@ -93,4 +100,4 @@ Globe edition and installer: **Создано Atheya.Org / Created by Atheya.Org
 
 **Автор: Никита Одинцов · ATHEYA.org.** Для Apple Silicon и Intel Mac доступен универсальный DMG выше. Пароль Mac, разрешения микрофона и «Универсального доступа» подтверждаются только в системных окнах.
 
-Неофициальная сборка OpenWispr 0.49.0 с доработкой Globe. Короткое нажатие оставлено macOS для переключения языка; удержание 350 мс начинает запись, отпускание завершает её. Говорите после появления индикатора записи. После распаковки установите whisper-cpp и разрешите приложению микрофон и «Универсальный доступ». Универсальный DMG для Apple Silicon и Intel, с локальной подписью, без notarization Apple. Модели скачиваются отдельно; личных настроек и записей в архиве нет.
+Неофициальная сборка OpenWispr 0.49.0 с доработкой Globe. Короткое нажатие оставлено macOS для переключения языка; удержание 350 мс начинает запись, отпускание завершает её. Говорите после появления индикатора записи. Движок распознавания уже внутри. Разрешите приложению микрофон и «Универсальный доступ». Выберите модель по размеру загрузки или отложите скачивание. Универсальный DMG для Apple Silicon и Intel, с локальной подписью, без notarization Apple. Модели скачиваются отдельно; личных настроек и записей в архиве нет.

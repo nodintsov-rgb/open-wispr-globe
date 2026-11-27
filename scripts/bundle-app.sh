@@ -4,6 +4,7 @@ set -euo pipefail
 BINARY="${1:-.build/release/open-wispr}"
 APP_DIR="${2:-OpenWispr Globe Universal.app}"
 VERSION="${3:-0.3.0}"
+RUNTIME_DIR="${4:-}"
 
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS"
@@ -15,6 +16,12 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cp "$REPO_DIR/Resources/AppIcon.icns" "$APP_DIR/Contents/Resources/AppIcon.icns"
 cp -R "$REPO_DIR"/Resources/*.lproj "$APP_DIR/Contents/Resources/"
+if [[ -n "$RUNTIME_DIR" ]]; then
+    mkdir -p "$APP_DIR/Contents/Helpers"
+    install -m 755 "$RUNTIME_DIR/whisper-cli" "$APP_DIR/Contents/Helpers/whisper-cli"
+    cp "$RUNTIME_DIR/whisper.cpp.LICENSE" "$APP_DIR/Contents/Resources/"
+    codesign --force --sign - "$APP_DIR/Contents/Helpers/whisper-cli"
+fi
 
 cat > "$APP_DIR/Contents/Info.plist" << PLIST
 <?xml version="1.0" encoding="UTF-8"?>

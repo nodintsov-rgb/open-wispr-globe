@@ -68,13 +68,17 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             self.statusBar.onConfigChange = { [weak self] newConfig in
                 self?.applyConfigChange(newConfig)
             }
+            self.statusBar.onModelSelection = { [weak self] model in
+                self?.selectModel(model)
+            }
             self.statusBar.buildMenu()
         }
 
         if Transcriber.findWhisperBinary() == nil {
-            print("Error: whisper-cpp not found. Install it with: brew install whisper-cpp")
+            let message = TranscriberError.whisperNotFound.localizedDescription
+            print("Error: \(message)")
             DispatchQueue.main.async { [weak self] in
-                self?.statusBar.state = .error("whisper-cpp не найден. Откройте установщик OpenWispr Globe.")
+                self?.statusBar.state = .error(message)
                 self?.statusBar.buildMenu()
             }
             return
@@ -154,6 +158,46 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         statusBar.buildMenu()
         print("Accessibility: granted")
         Permissions.recordCurrentVersion()
+        if Bundle.main.bundleURL.pathExtension == "app",
+           !Transcriber.modelExists(modelSize: config.modelSize) {
+            if let model = ModelSelection.choose() {
+                config = configurationSelectingModel(model)
+                transcriber = makeTranscriber(for: config)
+            } else {
+                statusBar.state = .waitingForModel(nil)
+                statusBar.buildMenu()
+                return
+            }
+        }
+        startModelSetup()
+    }
+
+    private func configurationSelectingModel(_ model: String) -> Config {
+        var newConfig: Config = config
+        if Config.isEnglishOnlyModel(model) {
+            newConfig.language = "en"
+        } else if Config.isEnglishOnlyModel(config.modelSize), config.language == "en" {
+            newConfig.language = "auto"
+        }
+        newConfig.modelSize = model
+        try? newConfig.save()
+        return newConfig
+    }
+
+    private func selectModel(_ model: String) {
+        if case .downloading = statusBar.state { return }
+        if case .waitingForModel = statusBar.state {
+            config = configurationSelectingModel(model)
+            transcriber = makeTranscriber(for: config)
+            startModelSetup()
+        } else if isReady {
+            applyConfigChange(configurationSelectingModel(model))
+        }
+    }
+
+    private func startModelSetup() {
+        statusBar.state = .starting
+        statusBar.buildMenu()
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             do {
@@ -161,7 +205,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             } catch {
                 print("Fatal setup error: \(error.localizedDescription)")
                 DispatchQueue.main.async { [weak self] in
-                    self?.statusBar.state = .error(error.localizedDescription)
+                    self?.statusBar.state = .waitingForModel(error.localizedDescription)
                     self?.statusBar.updateDownloadProgress(nil)
                 }
             }

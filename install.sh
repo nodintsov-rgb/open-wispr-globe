@@ -6,9 +6,9 @@
 # Full license: https://github.com/nodintsov-rgb/open-wispr-globe/blob/main/LICENSE
 set -euo pipefail
 
-RELEASE='0.49.0-globe.10'
+RELEASE='0.49.0-globe.12'
 ASSET='OpenWispr-Globe-Universal.dmg'
-SHA256='7c3ca3031fa10f2e778dd94e1aacb1b93f5c409fd8f843c1dc2ddd5d928ec987'
+SHA256='c8a40f57b125bacb68e981732b882c52383b2a27e845b0c63c3fa7461b1e0698'
 GITHUB_BASE="https://github.com/nodintsov-rgb/open-wispr-globe/releases/download/v$RELEASE"
 HF_BASE="https://huggingface.co/spaces/ATHEYA/open-wispr-globe/resolve/main/downloads/v$RELEASE"
 

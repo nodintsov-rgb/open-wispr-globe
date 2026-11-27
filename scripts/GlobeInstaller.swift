@@ -209,7 +209,7 @@ app.activate(ignoringOtherApps: true)
 
 let progress = NSAlert()
 progress.messageText = "Установка OpenWispr Globe"
-progress.informativeText = "Подготавливаем whisper.cpp и копируем приложение. Это может занять несколько минут."
+progress.informativeText = "Копируем OpenWispr Globe Universal со встроенным движком распознавания."
 let spinner = NSProgressIndicator(frame: NSRect(x: 0, y: 0, width: 24, height: 24))
 spinner.style = .spinning
 spinner.startAnimation(nil)
@@ -242,16 +242,6 @@ DispatchQueue.global(qos: .userInitiated).async {
             alert.addButton(withTitle: "Закрыть")
             alert.runModal()
             exit(1)
-        case 20:
-            let alert = NSAlert()
-            alert.messageText = "Для установки нужен Homebrew"
-            alert.informativeText = "Установите Homebrew по официальной инструкции, затем снова откройте установщик OpenWispr Globe."
-            alert.addButton(withTitle: "Открыть инструкцию")
-            alert.addButton(withTitle: "Закрыть")
-            if alert.runModal() == .alertFirstButtonReturn,
-               let url = URL(string: "https://brew.sh/") {
-                NSWorkspace.shared.open(url)
-            }
         default:
             let alert = NSAlert()
             alert.alertStyle = .warning
